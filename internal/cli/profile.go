@@ -89,11 +89,11 @@ var profileLsCmd = &cobra.Command{
 		})
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "NAME\tDESCRIPTION\tBACKENDS")
+		_, _ = fmt.Fprintln(w, "NAME\tDESCRIPTION\tBACKENDS")
 		for _, p := range profiles {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", p.Name, p.Description, p.GetBackendSummary())
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", p.Name, p.Description, p.GetBackendSummary())
 		}
-		w.Flush()
+		_ = w.Flush()
 
 		return nil
 	},
