@@ -2,6 +2,8 @@
 package sops
 
 import (
+	"fmt"
+
 	"github.com/enbiyagoral/sopsctl/internal/config"
 )
 
@@ -14,13 +16,17 @@ func NewArgsBuilder() *ArgsBuilder {
 }
 
 // Build generates SOPS CLI arguments from a profile.
-func (b *ArgsBuilder) Build(profile *config.Profile, command string, file string) []string {
+func (b *ArgsBuilder) Build(profile *config.Profile, command string, file string) ([]string, error) {
 	args := make([]string, 0, 16)
 
 	// Age backend
 	if profile.Age != nil {
-		for _, recipient := range profile.Age.Recipients {
-			args = append(args, "--age", recipient)
+		keys, err := profile.Age.GetAllPublicKeys()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get age keys: %w", err)
+		}
+		for _, key := range keys {
+			args = append(args, "--age", key)
 		}
 	}
 
@@ -41,7 +47,7 @@ func (b *ArgsBuilder) Build(profile *config.Profile, command string, file string
 	// Command and file
 	args = append(args, command, file)
 
-	return args
+	return args, nil
 }
 
 // BuildDecrypt generates arguments for decrypt.
@@ -50,9 +56,17 @@ func (b *ArgsBuilder) BuildDecrypt(file string) []string {
 }
 
 // BuildEdit generates arguments for edit.
-func (b *ArgsBuilder) BuildEdit(profile *config.Profile, file string) []string {
+func (b *ArgsBuilder) BuildEdit(profile *config.Profile, file string) ([]string, error) {
 	if profile == nil {
-		return []string{"edit", file}
+		return []string{"edit", file}, nil
 	}
 	return b.Build(profile, "edit", file)
+}
+
+// GetKeyFilePath returns the key file path from profile for setting SOPS_AGE_KEY_FILE.
+func (b *ArgsBuilder) GetKeyFilePath(profile *config.Profile) string {
+	if profile != nil && profile.Age != nil {
+		return profile.Age.GetKeyFilePath()
+	}
+	return ""
 }

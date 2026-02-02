@@ -24,7 +24,10 @@ var profileAddCmd = &cobra.Command{
 	Long: `Add a new encryption profile.
 
 Examples:
-  # Add profile with age key
+  # Add profile with age key file (recommended)
+  sopsctl profile add dev --description "Development" --age-key-file "~/.config/sops/age/keys.txt"
+  
+  # Add profile with explicit age public key
   sopsctl profile add dev --description "Development" --age "age1..."
   
   # Add profile with multiple age recipients
@@ -35,6 +38,7 @@ Examples:
 
 		description, _ := cmd.Flags().GetString("description")
 		ageKeys, _ := cmd.Flags().GetStringSlice("age")
+		ageKeyFile, _ := cmd.Flags().GetString("age-key-file")
 
 		profile := &config.Profile{
 			Name:        name,
@@ -42,15 +46,16 @@ Examples:
 		}
 
 		// Add age backend
-		if len(ageKeys) > 0 {
+		if ageKeyFile != "" || len(ageKeys) > 0 {
 			profile.Age = &config.AgeConfig{
+				KeyFile:    ageKeyFile,
 				Recipients: ageKeys,
 			}
 		}
 
 		// Validate
 		if !profile.HasBackends() {
-			return fmt.Errorf("at least one encryption backend is required (--age)")
+			return fmt.Errorf("at least one encryption backend is required (--age-key-file or --age)")
 		}
 
 		// Add to config
@@ -222,6 +227,7 @@ var profileResetCmd = &cobra.Command{
 
 func init() {
 	profileAddCmd.Flags().String("description", "", "profile description")
+	profileAddCmd.Flags().String("age-key-file", "", "path to age key file (contains public and private keys)")
 	profileAddCmd.Flags().StringSlice("age", nil, "age recipient public keys")
 
 	profileCmd.AddCommand(profileAddCmd)

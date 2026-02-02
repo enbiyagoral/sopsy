@@ -20,7 +20,7 @@ var configCmd = &cobra.Command{
 var configInitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize configuration file",
-	Long: `Create a new sopsctl configuration file with example profiles.
+	Long: `Create a new sopsctl configuration file.
 
 The config file will be created at ~/.config/sopsctl/config.yaml`,
 	Args: cobra.NoArgs,
@@ -41,15 +41,8 @@ The config file will be created at ~/.config/sopsctl/config.yaml`,
 			}
 		}
 
-		// Create example config
+		// Create empty config
 		newCfg := config.NewConfig()
-		newCfg.Profiles["example-age"] = &config.Profile{
-			Name:        "example-age",
-			Description: "Example age profile (replace with your key)",
-			Age: &config.AgeConfig{
-				Recipients: []string{"age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
-			},
-		}
 
 		if err := config.Save(newCfg, path); err != nil {
 			return err
@@ -57,8 +50,8 @@ The config file will be created at ~/.config/sopsctl/config.yaml`,
 
 		fmt.Printf("Configuration created at %s\n", path)
 		fmt.Println("\nNext steps:")
-		fmt.Println("  1. Edit the config: sopsctl config edit")
-		fmt.Println("  2. Add a profile:   sopsctl profile add <name> --age <key>")
+		fmt.Println("  1. Add a profile:   sopsctl profile add <name> --age-key-file <path>")
+		fmt.Println("  2. Set default:     sopsctl profile use <name>")
 		fmt.Println("  3. Encrypt a file:  sopsctl encrypt <file>")
 		return nil
 	},

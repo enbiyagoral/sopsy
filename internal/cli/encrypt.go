@@ -22,14 +22,20 @@ The profile determines which encryption backends (age, KMS, etc.) are used.`,
 		}
 
 		// Build SOPS arguments
-		sopsArgs := builder.Build(profile, "encrypt", file)
+		sopsArgs, err := builder.Build(profile, "encrypt", file)
+		if err != nil {
+			return err
+		}
+
+		// Get key file for decrypt operations within encrypt (re-encryption scenarios)
+		keyFile := builder.GetKeyFilePath(profile)
 
 		// Execute or dry-run
 		if dryRun {
-			executor.DryRun(sopsArgs)
+			executor.DryRunWithKeyFile(sopsArgs, keyFile)
 			return nil
 		}
 
-		return executor.Execute(sopsArgs)
+		return executor.ExecuteWithKeyFile(sopsArgs, keyFile)
 	},
 }

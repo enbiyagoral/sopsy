@@ -10,29 +10,49 @@ var editCmd = &cobra.Command{
 	Long: `Edit an encrypted file using SOPS.
 
 Opens the file in your $EDITOR after decrypting, then re-encrypts on save.
-If the file is new or being re-keyed, a profile can be selected.`,
+If a profile is specified, uses the key_file from that profile.`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		file := args[0]
 
-		// For edit, profile is optional (SOPS can work with existing files)
 		var sopsArgs []string
+		var keyFile string
+		var err error
+
 		if profileName != "" {
 			profile, err := cfg.GetProfile(profileName)
 			if err != nil {
 				return err
 			}
-			sopsArgs = builder.BuildEdit(profile, file)
+			sopsArgs, err = builder.BuildEdit(profile, file)
+			if err != nil {
+				return err
+			}
+			keyFile = builder.GetKeyFilePath(profile)
+		} else if cfg.DefaultProfile != "" {
+			profile, err := cfg.GetProfile(cfg.DefaultProfile)
+			if err == nil {
+				sopsArgs, err = builder.BuildEdit(profile, file)
+				if err != nil {
+					return err
+				}
+				keyFile = builder.GetKeyFilePath(profile)
+			} else {
+				sopsArgs = []string{"edit", file}
+			}
 		} else {
 			sopsArgs = []string{"edit", file}
 		}
 
+		// Avoid unused variable error
+		_ = err
+
 		// Execute or dry-run
 		if dryRun {
-			executor.DryRun(sopsArgs)
+			executor.DryRunWithKeyFile(sopsArgs, keyFile)
 			return nil
 		}
 
-		return executor.Execute(sopsArgs)
+		return executor.ExecuteWithKeyFile(sopsArgs, keyFile)
 	},
 }
