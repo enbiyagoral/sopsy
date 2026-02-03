@@ -46,12 +46,24 @@ snapshot:
 
 changelog:
   sort: asc
+  groups:
+    - title: Features
+      regexp: "^(feat).*"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^(fix|bug).*"
+      order: 1
+    - title: Documentation
+      regexp: "^(docs).*"
+      order: 2
+    - title: Maintenance
+      regexp: "^(chore|ci|test|style|refactor).*"
+      order: 3
+    - title: Others
+      order: 999
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
-      - "^ci:"
-      - "^chore:"
+      - "^Merge"
 
 brews:
   - name: sopsy
