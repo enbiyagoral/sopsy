@@ -65,29 +65,12 @@ brews:
     license: "Apache-2.0"
     install: |-
       bin.install "sopsctl"
-    post_install: |-
-      # Auto-install shell integration
-      zshrc = File.expand_path("~/.zshrc")
-      marker = "# sopsctl shell integration"
+    caveats: |-
+      To enable shell integration, run:
+        sopsctl init zsh
       
-      if File.exist?(zshrc) && !File.read(zshrc).include?(marker)
-        File.open(zshrc, "a") do |f|
-          f.puts ""
-          f.puts marker
-          f.puts 'sopsctl() {'
-          f.puts '  if [[ "${1:-}" == "profile" && "${2:-}" == "use" ]]; then'
-          f.puts '    local output; output=$(command sopsctl "$@" 2>&1); local rc=$?'
-          f.puts '    if [[ $rc -eq 0 ]]; then'
-          f.puts '      while IFS= read -r line; do'
-          f.puts '        [[ "$line" == export\\ * ]] && eval "$line" && echo "✓ Set ${line#export }"'
-          f.puts '      done <<< "$output"'
-          f.puts '    else echo "$output" >&2; return $rc; fi'
-          f.puts '  else command sopsctl "$@"; fi'
-          f.puts '}'
-        end
-        ohai "Shell integration installed to #{zshrc}"
-        ohai "Restart your terminal or run: source ~/.zshrc"
-      end
+      Then restart your terminal or run:
+        source ~/.zshrc
     test: |-
       system "#{bin}/sopsctl", "--help"
 

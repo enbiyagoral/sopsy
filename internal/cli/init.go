@@ -9,6 +9,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const banner = `
+  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  ┃                                                                ┃
+  ┃   ███████  ██████  ██████  ███████  ██████ ████████ ██         ┃
+  ┃   ██      ██    ██ ██   ██ ██      ██         ██    ██         ┃
+  ┃   ███████ ██    ██ ██████  ███████ ██         ██    ██         ┃
+  ┃        ██ ██    ██ ██           ██ ██         ██    ██         ┃
+  ┃   ███████  ██████  ██      ███████  ██████    ██    ███████    ┃
+  ┃                                                                ┃
+  ┃   🔐 SOPS Profile Manager                                      ┃
+  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+`
+
 var initCmd = &cobra.Command{
 	Use:   "init <shell>",
 	Short: "Install shell integration",
@@ -42,6 +55,10 @@ Examples:
 			return nil
 		}
 
+		// Show banner for first install
+		fmt.Print(banner)
+		fmt.Println()
+
 		// Append shell function to config file
 		f, err := os.OpenFile(configFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -54,9 +71,13 @@ Examples:
 			return fmt.Errorf("failed to write to %s: %w", configFile, err)
 		}
 
-		fmt.Printf("✓ Installed to %s\n", configFile)
-		fmt.Println("\nRestart your terminal or run:")
+		fmt.Printf("✓ Shell integration installed to %s\n", configFile)
+		fmt.Println()
+		fmt.Println("Restart your terminal or run:")
 		fmt.Printf("  source %s\n", configFile)
+		fmt.Println()
+		fmt.Println("Then switch profiles with:")
+		fmt.Println("  sopsctl profile use <name>")
 		return nil
 	},
 }
@@ -65,20 +86,13 @@ const shellFunction = `
 # sopsctl shell integration
 sopsctl() {
   if [[ "${1:-}" == "profile" && "${2:-}" == "use" ]]; then
-    local output
-    output=$(command sopsctl "$@" 2>&1)
-    local rc=$?
+    local output; output=$(command sopsctl "$@" 2>&1); local rc=$?
     if [[ $rc -eq 0 ]]; then
       while IFS= read -r line; do
         [[ "$line" == export\ * ]] && eval "$line" && echo "✓ Set ${line#export }"
       done <<< "$output"
-    else
-      echo "$output" >&2
-      return $rc
-    fi
-  else
-    command sopsctl "$@"
-  fi
+    else echo "$output" >&2; return $rc; fi
+  else command sopsctl "$@"; fi
 }
 `
 
