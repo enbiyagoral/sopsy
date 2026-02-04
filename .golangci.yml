@@ -1,0 +1,133 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - errcheck
+    - revive
+    - gocyclo
+    - goconst
+    - gocritic
+    - misspell
+    - gosec
+    - whitespace
+    - lll
+    - dogsled
+    - bodyclose
+    - nolintlint
+    - unconvert
+    - unparam
+    - prealloc
+    - nakedret
+
+  disable:
+    - depguard
+    - godot
+    - testpackage
+    - paralleltest
+    - wsl
+    - nlreturn
+    - forbidigo
+    - makezero
+
+  settings:
+    gocyclo:
+      min-complexity: 15
+    lll:
+      line-length: 130
+      tab-width: 4
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+    revive:
+      severity: warning
+      rules:
+        - name: exported
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: redefines-builtin-id
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+        - emptyStringTest
+        - paramTypeCombine
+    gosec:
+      excludes:
+        - G104
+        - G114
+        - G204
+        - G301
+        - G302
+        - G304
+        - G306
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - dupl
+          - gosec
+          - lll
+      - path: cmd/
+        linters:
+          - revive
+        text: "package-comments"
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/enbiyagoral/sopsy
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: true
+
+output:
+  formats:
+    text:
+      path: stdout
+      colors: true
