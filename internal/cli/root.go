@@ -15,8 +15,19 @@ var (
 	profileName string
 
 	// Shared instances
-	cfg *config.Config
+	cfg     *config.Config
+	version string
 )
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print version",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println(version)
+		return nil
+	},
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "sopsy",
@@ -34,9 +45,19 @@ Quick start:
   5. Use sops:       sops -e -i secrets.yaml`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Lookup("version").Changed {
+			fmt.Println(version)
+			return nil
+		}
+		return cmd.Help()
+	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config loading for certain commands
-		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" {
+		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {
+			return nil
+		}
+		if f := cmd.Flags().Lookup("version"); f != nil && f.Changed {
 			return nil
 		}
 
@@ -68,10 +89,18 @@ Quick start:
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default: ~/.config/sopsy/config.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "", "profile to use")
+	rootCmd.Flags().BoolP("version", "V", false, "print version")
 
 	// Add subcommands
 	rootCmd.AddCommand(profileCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
+// SetVersion sets the version string (called from main).
+func SetVersion(v string) {
+	version = v
+	rootCmd.Version = v
 }
 
 // Execute runs the CLI.

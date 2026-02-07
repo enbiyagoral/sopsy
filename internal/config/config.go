@@ -14,14 +14,7 @@ type Config struct {
 	Version        string              `yaml:"version"`
 	DefaultProfile string              `yaml:"default_profile,omitempty"`
 	Profiles       map[string]*Profile `yaml:"profiles,omitempty"`
-	Directories    map[string]*DirMap  `yaml:"directories,omitempty"`
 	Settings       Settings            `yaml:"settings,omitempty"`
-}
-
-// DirMap maps a directory to a profile with optional auto-selection.
-type DirMap struct {
-	Profile string `yaml:"profile"`
-	Auto    bool   `yaml:"auto"`
 }
 
 // Settings contains global sopsy settings.
